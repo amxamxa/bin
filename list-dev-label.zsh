@@ -1,1 +1,0 @@
-/home/project/list-dev-label/list-dev-label.zsh
