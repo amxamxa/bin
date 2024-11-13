@@ -1,0 +1,1 @@
+/share/zsh/functions/NIXbuilder.sh
