@@ -1,77 +1,101 @@
 #!/usr/bin/env bash
-# auth:______max__kempter_______ 
-# filename:______NIXbuild.sh 
 
-# todo
-/*
--  add function "ask_search_ext" Search for a ext
--  am Ende nach Zeile 75, frage ob suche nochmal gemacht werden soll: "
-#     show_prompt "Möchtest du eine weitere Suche durchführen? (j/n)"
-#    read -r answer
- #   [[ $answer != [jJ] ]] && break
-#done
-"
-*/
+# auth:______max__kempter_______
+#
+# filename: build-find.sh
 
-# Colors are alredy defined
+# Farben für die Benutzerfreundlichkeit
+LILA='\033[1;35m'  # Eingabeaufforderungen
+GREEN='\033[1;32m' # Bestätigungen
+RED='\033[1;31m'   # Fehler
+RESET='\033[0m'    # Zurücksetzen der Farben
 
-# Function to ask user for search type (file or path)
-ask_search_type() {
-    echo -e "${LILA}Search for a file (f) or a path (p)?${RESET}"
-    while true; do
-        read -r file_or_path
-        case $file_or_path in
-            [fF] )
-                echo -e "${GREEN}OK, searching for a file!${RESET}"
-                return "file"
-                ;;
-            [pP] )
-                echo -e "${GREEN}OK, searching for a path!${RESET}"
-                return "path"
-                ;;
-            * )
-                echo -e "${RED}Please enter either f or p.${RESET}"
-                ;;
-        esac
-    done
+# Funktion zur Validierung von Eingaben
+validate_input() {
+  local input="$1"
+  if [[ "$input" =~ [^a-zA-Z0-9._-] ]]; then
+    echo -e "${RED}Ungültige Eingabe. Bitte keine Sonderzeichen verwenden.${RESET}"
+    return 1
+  fi
+  return 0
 }
 
-# Ask user for search path
-echo -e "${LILA}Where do you want to search? (e.g. /etc)${RESET}"
-read -r search_path
+# Funktion für Dateierweiterungsformatierung
+format_file_extension() {
+  local ext="$1"
+  if [[ -z "$ext" ]]; then
+    echo "*"
+  elif [[ "$ext" == "nix" ]]; then
+    echo ".nix"
+  elif [[ "$ext" =~ ^\.[a-zA-Z0-9]{1,3}$ ]]; then
+    echo "$ext"
+  elif [[ "$ext" =~ ^[a-zA-Z0-9]{1,3}$ ]]; then
+    echo ".$ext"
+  else
+    echo -e "${RED}Ungültige Dateierweiterung. Es dürfen nur Buchstaben/Zahlen mit maximal 3 Zeichen verwendet werden.${RESET}"
+    return 1
+  fi
+}
 
-# Ensure search path starts with "/"
-if [[ $search_path != /* ]]; then
-    search_path="/$search_path"
-    echo -e "${GREEN}OK, searching under $search_path${RESET}"
-fi
-
-# Ask user for search term
-echo -e "${LILA}What do you want to search for? (e.g. shell)${RESET}"
-while true; do
-    read -r search_term
-
-    # Check if search term is at least 2 characters long
-    if [[ ${#search_term} -lt 2 ]]; then
-        # Add a wildcard to the search term
-        search_term="${search_term}*"
+# Hauptfunktion
+search_files() {
+  while true; do
+    # Suchpfad abfragen
+    echo -e "${LILA}Wo möchten Sie suchen? (z. B.: \"/etc\") [Standard: /]:${RESET}"
+    read -r searchPath
+    searchPath="${searchPath:-/}"
+    if [[ "$searchPath" =~ ^// ]]; then
+      searchPath="/${searchPath#//}"
+    fi
+    if [[ ! "$searchPath" =~ ^/ ]]; then
+      echo -e "${RED}Der Suchpfad muss mit \"/\" beginnen.${RESET}"
+      continue
     fi
 
-    # Check if search term contains special characters (except *)
-    if [[ $search_term =~ [^a-zA-Z0-9\*] ]]; then
-        echo -e "${RED}Error: invalid character in search query!${RESET}"
+    # Suchbegriff abfragen
+    echo -e "${LILA}Wonach möchten Sie suchen? (z. B.: \"zsh\") [Standard: *]:${RESET}"
+    read -r searchTerm
+    searchTerm="${searchTerm:-*}"
+    validate_input "$searchTerm" || continue
+
+    # Dateityp (Datei oder Verzeichnis) abfragen
+    echo -e "${LILA}Suchen Sie nach einer Datei (f) oder einem Verzeichnis (p)? [Standard: keine]:${RESET}"
+    read -r fileORpath
+    if [[ "$fileORpath" != "f" && "$fileORpath" != "p" ]]; then
+      echo -e "${RED}Bitte geben Sie \"f\" für Datei oder \"p\" für Verzeichnis ein.${RESET}"
+      continue
+    fi
+    [[ "$fileORpath" == "f" ]] && typeFlag="f" || typeFlag="d"
+
+    # Dateierweiterung abfragen, falls Dateityp Datei
+    if [[ "$typeFlag" == "f" ]]; then
+      echo -e "${LILA}Möchten Sie nach einer bestimmten Dateierweiterung filtern? (z. B.: .txt) [Standard: *]:${RESET}"
+      read -r fileExt
+      fileExt=$(format_file_extension "$fileExt") || continue
     else
-        echo -e "${GREEN}Search query is OK: $search_term${RESET}"
-        break
+      fileExt=""
     fi
-done
 
-# Define find command
-find_command="bash -c "find $search_path -type $(ask_search_type) -name $search_term | grep --color=auto -s -I -C 1 $search_term""
+    # Befehl generieren und anzeigen
+    echo -e "${GREEN}Der generierte Befehl lautet:${RESET}"
+    findCmd="find \"$searchPath\" -type $typeFlag -name \"$searchTerm$fileExt\""
+    echo -e "${LILA}$findCmd${RESET}"
 
-# Display find command
-echo -e "${GREEN}The command is: ${find_command}${RESET}"
-sleep 5
+    # Bestätigung und Ausführung
+    echo -e "${LILA}Soll der Befehl ausgeführt werden? (j/n):${RESET}"
+    read -r confirm
+    if [[ "$confirm" =~ ^[jJ]$ ]]; then
+      eval "$findCmd"
+    fi
 
-# Execute find command
-eval $find_command
+    # Wiederholen?
+    echo -e "${LILA}Möchten Sie eine weitere Suche durchführen? (j/n):${RESET}"
+    read -r repeat
+    if [[ ! "$repeat" =~ ^[jJ]$ ]]; then
+      break
+    fi
+  done
+}
+
+# Skript starten
+search_files
