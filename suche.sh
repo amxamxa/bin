@@ -2,22 +2,18 @@
 # auth:______max__kempter_______ 
 # filename:______NIXbuild.sh 
 
-
-# frag nach ext
-# am Ende, Frage ob cmd gemacht werden soll
-
-    # Frage nach weiterer Suche
-#add     show_prompt "Möchtest du eine weitere Suche durchführen? (j/n)"
+# todo
+/*
+-  add function "ask_search_ext" Search for a ext
+-  am Ende nach Zeile 75, frage ob suche nochmal gemacht werden soll: "
+#     show_prompt "Möchtest du eine weitere Suche durchführen? (j/n)"
 #    read -r answer
  #   [[ $answer != [jJ] ]] && break
 #done
+"
+*/
 
-
-# Define colors for UI
-RESET="\e[0m"
-#GREEN="\033[38;2;0;255;0m\033[48;2;0;25;2m"
-#RED="\033[38;2;240;138;100m\033[48;2;147;18;61m"
-#LILA="\033[38;2;85;85;255m\033[48;2;21;16;46m"
+# Colors are alredy defined
 
 # Function to ask user for search type (file or path)
 ask_search_type() {
