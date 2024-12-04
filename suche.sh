@@ -2,73 +2,80 @@
 # auth:______max__kempter_______ 
 # filename:______NIXbuild.sh 
 
-# Überprüfen, ob Suchpfad und Suchmuster als Argumente übergeben wurden
-echo "Suchst du eine Datei (f) oder einen Pfad (p):"
+
+# frag nach ext
+# am Ende, Frage ob cmd gemacht werden soll
+
+    # Frage nach weiterer Suche
+#add     show_prompt "Möchtest du eine weitere Suche durchführen? (j/n)"
+#    read -r answer
+ #   [[ $answer != [jJ] ]] && break
+#done
+
+
+# Define colors for UI
+RESET="\e[0m"
+#GREEN="\033[38;2;0;255;0m\033[48;2;0;25;2m"
+#RED="\033[38;2;240;138;100m\033[48;2;147;18;61m"
+#LILA="\033[38;2;85;85;255m\033[48;2;21;16;46m"
+
+# Function to ask user for search type (file or path)
+ask_search_type() {
+    echo -e "${LILA}Search for a file (f) or a path (p)?${RESET}"
+    while true; do
+        read -r file_or_path
+        case $file_or_path in
+            [fF] )
+                echo -e "${GREEN}OK, searching for a file!${RESET}"
+                return "file"
+                ;;
+            [pP] )
+                echo -e "${GREEN}OK, searching for a path!${RESET}"
+                return "path"
+                ;;
+            * )
+                echo -e "${RED}Please enter either f or p.${RESET}"
+                ;;
+        esac
+    done
+}
+
+# Ask user for search path
+echo -e "${LILA}Where do you want to search? (e.g. /etc)${RESET}"
+read -r search_path
+
+# Ensure search path starts with "/"
+if [[ $search_path != /* ]]; then
+    search_path="/$search_path"
+    echo -e "${GREEN}OK, searching under $search_path${RESET}"
+fi
+
+# Ask user for search term
+echo -e "${LILA}What do you want to search for? (e.g. shell)${RESET}"
 while true; do
-    read -r FOP
-    case $FOP in
-        [fF] )
-            echo "OK, wir suchen eine Datei!"
-            echo
-            break;;
-        
-        [pP] )
-            echo "OK, wir suchen einen Pfad!"
-            echo
-            break;;
-        * )
-            echo "Bitte entweder f oder p eingeben."
-            echo
-            ;;
-    esac
+    read -r search_term
+
+    # Check if search term is at least 2 characters long
+    if [[ ${#search_term} -lt 2 ]]; then
+        # Add a wildcard to the search term
+        search_term="${search_term}*"
+    fi
+
+    # Check if search term contains special characters (except *)
+    if [[ $search_term =~ [^a-zA-Z0-9\*] ]]; then
+        echo -e "${RED}Error: invalid character in search query!${RESET}"
+    else
+        echo -e "${GREEN}Search query is OK: $search_term${RESET}"
+        break
+    fi
 done
 
-echo "Wo soll gesucht werden?, z. B. /etc"
-read -r PFAD
-# Überprüfen, ob die Variable mit "/" beginnt
-if [[ $PFAD != /* ]]; then
-    PFAD="/$PFAD"
-    echo
-    echo "OK, wir suchen unter $PFAD"
-    echo
-fi
+# Define find command
+find_command="bash -c "find $search_path -type $(ask_search_type) -name $search_term | grep --color=auto -s -I -C 1 $search_term""
 
-echo
-echo "Was soll gesucht werden?, z. B. shell"
-while true; do
-    read -r SUCHE
+# Display find command
+echo -e "${GREEN}The command is: ${find_command}${RESET}"
+sleep 5
 
-  
-echo "Die Variable SUCHE ist: $SUCHE"
-# Überprüfung der Länge von SUCHE
-if [[ ${#SUCHE} -lt 2 ]]; then
-  # Hänge einen Stern an SUCHE an
-  SUCHE="${SUCHE}*"
-fi
-
-# Überprüfung auf Sonderzeichen (außer *)
-if [[ $SUCHE =~ [^a-zA-Z0-9\*] ]]; then
-  echo "Fehler: Ungültiges Zeichen in der Suchanfrage!"
-else
-  echo "Die Suchanfrage ist in Ordnung: $SUCHE"
-fi
-
-# Überprüfe, ob das Skript mit fish oder zsh aufgerufen wurde
-if [[ "$0" == *fish* ]] || [[ "$0" == *zsh* ]]; then
-  # Füge das Präfix "bash -c" hinzu
-  TERM="bash -c"
-else
-	echo
-fi
-
-
-# FIND FUNKTION
-	echo "Der Befehl lautet also:"
-	    echo "$TERM find $PFAD -type $FOP -name $SUCHE | grep --color=auto -s -I -C 1 $SUCHE"
-	    sleep 1
-	    echo
-command $TERM find $PFAD -type $FOP -name $SUCHE | grep --color=auto -s -I -C 1 $SUCHE
-	
-done
-
-
+# Execute find command
+eval $find_command
