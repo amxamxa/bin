@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-
 # auth:______max__kempter_______
-#
 # filename: build-find.sh
 
 # Farben für die Benutzerfreundlichkeit
@@ -25,8 +23,6 @@ format_file_extension() {
   local ext="$1"
   if [[ -z "$ext" ]]; then
     echo "*"
-  elif [[ "$ext" == "nix" ]]; then
-    echo ".nix"
   elif [[ "$ext" =~ ^\.[a-zA-Z0-9]{1,3}$ ]]; then
     echo "$ext"
   elif [[ "$ext" =~ ^[a-zA-Z0-9]{1,3}$ ]]; then
