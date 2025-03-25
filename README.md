@@ -1,2 +1,3 @@
 # bin
-meine funtionen
+meine funktionen
+
