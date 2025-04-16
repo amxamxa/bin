@@ -1,7 +1,29 @@
 #!/usr/bin/env bash
-# filename: cast2more.sh
-
-# ./cast2more.sh -i project@2025-04-11.cast --keep-gif
+##########################################
+## ╔═╗╦╦  ╔═╗ ############################
+## ╠╣ ║║  ║╣ 
+## ╚  ╩╩═╝╚═╝
+##  -NAME:	   cast2more.sh
+##  -VERSION/tag: 0.1
+## - Github:      github.com/amxamxa/bin
+## - DATE:        2025-Feb-09                
+## ---------------------------------------
+## To do/ Known Bugs /or depends:
+##     Requires 'agg' (asciinema-agg) and 'ffmpeg' commands
+## ---------------------------------------
+## Cast2More - Convert asciinema casts to GIFs and MP4s
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## This script allows you to convert asciinema cast (.cast) files into GIF and MP4 video formats.
+## It provides options to generate only GIF, only MP4, or both, as well as control the output filenames.
+## ./cast2more.sh -i project@2025-04-11.cast --only-gif
+##
+## Main functions/workflow:
+## • Parses command-line arguments to get input .cast file and output options
+## • Checks for required dependencies ('agg' and 'ffmpeg')
+## • Generates GIF from input .cast file
+## • Converts GIF to MP4 video format
+## • Optionally removes the intermediate GIF file
+#####################################
 
 #===========================#
 #  COLOR DEFINITIONS       #
@@ -23,7 +45,6 @@ show_help() {
     echo -e "  -o, --output       Output base name (optional, default is input basename)"
     echo -e "  --only-gif         Only generate .gif, skip .mp4"
     echo -e "  --only-mp4         Only generate .mp4, assumes .gif already exists"
-    echo -e "  --keep-gif         Do not delete intermediate .gif"
     echo -e "  -h, --help         Show this help message"
 }
 
@@ -52,10 +73,6 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         --only-mp4)
             ONLY_MP4=true
-            shift
-            ;;
-        --keep-gif)
-            KEEP_GIF=true
             shift
             ;;
         -h|--help)
