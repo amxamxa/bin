@@ -23,13 +23,13 @@ COLOR_INFO="\033[38;2;200;200;200m"    # Gray for info
 # ----------------------------
 # CONFIGURABLE SETTINGS (DEFAULTS)
 # ----------------------------
-GROUP_FROM_DEPTH=3             # Group output from this directory depth onward
-SHOW_FULL_PATHS=false          # Show full paths instead of relative ones
-DRY_RUN_ONLY=false             # Only show dry-run, skip confirmation prompt
+GROUP_DEPTH=3                   # Ab diesem Verzeichnislevel gruppieren
+FILES_PER_PROMPT=10             # Max. Dateien pro Abfrage
+SHOW_FULL_PATHS=false           # Komplette Pfade anzeigen?
 
 # ----------------------------
-# FUNCTION: Print a formatted message
-# Usage: _print_msg [TYPE] "Message"
+# FUNKTION: Farbige Ausgabe
+# Usage: _print_msg [TYPE] "Nachricht"
 # ----------------------------
 _print_msg() {
     local type="$1"
@@ -41,109 +41,95 @@ _print_msg() {
         "success") color="${COLOR_SUCCESS}" ;;
         "error") color="${COLOR_ERROR}" ;;
         "prompt") color="${COLOR_PROMPT}" ;;
-        *) color="${COLOR_INFO}" ;;
+        "group") color="${COLOR_GROUP}" ;;
+        *) color="${RESET}" ;;
     esac
 
     echo -e "${color}${msg}${RESET}"
 }
 
 # ----------------------------
-# FUNCTION: Preview changes (dry-run)
+# FUNKTION: Gruppierte Dry-Run-Vorschau
 # ----------------------------
-_preview_changes() {
-    _print_msg "info" "\n=== DRY-RUN MODE (Preview Changes) ==="
+_preview_grouped() {
+    local current_group=""
     local counter=0
+    local group_counter=0
 
-    find . -name "* *" -print | while read -r filepath; do
-        ((counter++))
+    while read -r filepath; do
+        # Bestimme Gruppenschlüssel (z.B. "Projekte/Mein-Projekt")
+        local group_key=$(echo "$filepath" | cut -d'/' -f1-${GROUP_DEPTH} | tr ' ' '-')
         
-        # Generate new filename (spaces → dashes)
-        local new_filepath=$(echo "$filepath" | tr ' ' '-')
-        
-        # Apply path grouping if enabled
-        if [ "$SHOW_FULL_PATHS" = false ]; then
-            local display_path=$(echo "$filepath" | cut -d'/' -f"${GROUP_FROM_DEPTH}"-)
-            local display_new_path=$(echo "$new_filepath" | cut -d'/' -f"${GROUP_FROM_DEPTH}"-)
-        else
+        # Neue Gruppe beginnen
+        if [[ "$group_key" != "$current_group" ]]; then
+            current_group="$group_key"
+            ((group_counter++))
+            _print_msg "group" "\n--- Gruppe ${group_counter}: ${group_key} ---"
+        fi
+
+        # Dateipfad anpassen (gruppiert/komplett)
+        if [ "$SHOW_FULL_PATHS" = true ]; then
             local display_path="$filepath"
-            local display_new_path="$new_filepath"
+            local display_new_path=$(echo "$filepath" | tr ' ' '-')
+        else
+            local display_path=$(echo "$filepath" | cut -d'/' -f${GROUP_DEPTH}-)
+            local display_new_path=$(echo "$filepath" | tr ' ' '-' | cut -d'/' -f${GROUP_DEPTH}-)
         fi
 
         _print_msg "dryrun" "[${counter}] ${display_path} → ${display_new_path}"
-    done
+        ((counter++))
 
-    _print_msg "info" "Total files/dirs to be renamed: ${counter}"
+        # Interaktive Abfrage nach jeder Gruppe
+        if (( counter % FILES_PER_PROMPT == 0 )) || [[ -z $(peek_next_line) ]]; then
+            _ask_for_execution
+        fi
+    done < <(find . -name "* *" -print | sort)
 }
 
 # ----------------------------
-# FUNCTION: Execute renaming
+# HELFER: Prüft nächste Zeile ohne Verbrauch
 # ----------------------------
-_execute_renaming() {
-    _print_msg "info" "\n=== STARTING RENAMING (Spaces → Dashes) ==="
-    local success_count=0
-    local error_count=0
+peek_next_line() {
+    IFS= read -r next_line
+    printf '%s\n' "$next_line"
+}
 
+# ----------------------------
+# FUNKTION: Frage nach Ausführung für aktuelle Gruppe
+# ----------------------------
+_ask_for_execution() {
+    _print_msg "prompt" "\nDiese Gruppe umbenennen? (j/N/alle/exit) "
+    read -r -n 1 response
+    echo  # Neue Zeile
+
+    case "$response" in
+        [jJ]) _execute_single_group ;;
+        [aA]) _execute_all_remaining ;;
+        [eE]) _print_msg "info" "Abbruch durch Benutzer."; exit 0 ;;
+        *) _print_msg "info" "Übersprungen." ;;
+    esac
+}
+
+# ----------------------------
+# FUNKTION: Benenne aktuelle Gruppe um
+# ----------------------------
+_execute_single_group() {
     find . -name "* *" -print0 | while IFS= read -r -d '' filepath; do
-        local new_filepath=$(echo "$filepath" | tr ' ' '-')
-        
-        if mv -v "$filepath" "$new_filepath" 2>/dev/null; then
-            ((success_count++))
-        else
-            ((error_count++))
-            _print_msg "error" "Failed to rename: ${filepath}"
+        local group_key=$(echo "$filepath" | cut -d'/' -f1-${GROUP_DEPTH} | tr ' ' '-')
+        if [[ "$group_key" == "$current_group" ]]; then
+            mv -v "$filepath" "$(echo "$filepath" | tr ' ' '-')"
         fi
     done
-
-    _print_msg "success" "\n=== RENAMING COMPLETE ==="
-    _print_msg "info" "Successfully renamed: ${success_count}"
-    [ "$error_count" -gt 0 ] && _print_msg "error" "Failed attempts: ${error_count}"
 }
 
 # ----------------------------
-# FUNCTION: Parse command-line arguments
-# ----------------------------
-_parse_arguments() {
-    while [[ "$#" -gt 0 ]]; do
-        case "$1" in
-            --full-paths)
-                SHOW_FULL_PATHS=true
-                shift
-                ;;
-            --depth=*)
-                GROUP_FROM_DEPTH="${1#*=}"
-                shift
-                ;;
-            --dry-run)
-                DRY_RUN_ONLY=true
-                shift
-                ;;
-            *)
-                _print_msg "error" "Unknown option: $1"
-                exit 1
-                ;;
-        esac
-    done
-}
-
-# ----------------------------
-# MAIN EXECUTION
+# HAUPTLOGIK
 # ----------------------------
 main() {
-    _parse_arguments "$@"
-
-    _preview_changes
-
-    if [ "$DRY_RUN_ONLY" = false ]; then
-        _print_msg "prompt" "\nProceed with renaming? (y/N) "
-        read -r -n 1 response
-        echo  # Move to new line
-        
-        if [[ "$response" =~ ^[Yy]$ ]]; then
-            _execute_renaming
-        else
-            _print_msg "info" "Operation cancelled by user."
-        fi
-    fi
+    _print_msg "info" "=== START: Leerzeichen-zu-Bindestrich-Konvertierung ==="
+    _preview_grouped
+    _print_msg "success" "=== VORGANG ABGESCHLOSSEN ==="
 }
 
 main "$@"
+
