@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LS_COLORS Editor</title>
+    <style>
+        @font-face {
+            font-family: 'Keypunch029';
+            src: url('https://fontlibrary.org/assets/fonts/keypunch029/378f6e551ba0c06c60f46c26b58bbf34/98cc1db253f87b400fb11ce2e2a67d62/Keypunch029Regular.otf') format('opentype');
+            font-weight: bold;
+        }
+        
+        @font-face {
+            font-family: 'Cyanotype';
+            src: url('https://fontlibrary.org/assets/fonts/cyanotype/c88a34ba0a5a8d37a04e24c6c10a2748/f83319f735fb3547b1e5e3507f5faa68/CyanotypeMedium.otf') format('opentype');
+            font-weight: bold;
+        }
+        
+        @font-face {
+            font-family: 'Poorfish';
+            src: url('https://fontlibrary.org/assets/fonts/poorfish/4f87a6b479ba87fcc2b3d0536caf4c3a/caa6a42dcfc7d71c79c7d76e023a7daf/PoorfishRegular.otf') format('opentype');
+            font-weight: normal;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', 'Lucida Console', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+        
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        body.dark-mode .container {
+            background: #1e1e1e;
+            color: #e0e0e0;
+        }
+        
+        h1 {
+            font-family: 'Keypunch029', monospace;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2em;
+            transition: color 0.3s;
+        }
+        
+        body.dark-mode h1 {
+            color: #e0e0e0;
+        }
+        
+        h3 {
+            font-family: 'Keypunch029', monospace;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+        
+        body.dark-mode h3 {
+            color: #b0b0b0;
+        }
+        
+        .mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .mode-toggle button {
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #667eea;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        .mode-toggle button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-mode .mode-toggle button {
+            background: rgba(30, 30, 30, 0.9);
+            border-color: #a78bff;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            transition: border-color 0.3s, background 0.3s, color 0.3s;
+        }
+        
+        body.dark-mode textarea {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        body.dark-mode textarea:focus {
+            border-color: #a78bff;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-family: 'Courier New', 'Lucida Console', monospace;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        body.dark-mode .btn-secondary {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .btn-secondary:hover {
+            background: #4a4a4a;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        th {
+            font-family: 'Cyanotype', monospace;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 14px;
+        }
+        
+        td {
+            font-family: 'Poorfish', monospace;
+            font-weight: normal;
+        }
+        
+        tr:nth-child(even) {
+            background: #2a2a2a;
+            color: white;
+        }
+        
+        body.dark-mode tr:nth-child(odd) {
+            background: #1e1e1e;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode tr:nth-child(even) {
+            background: #2a2a2a;
+            color: white;
+        }
+        
+        tr:nth-child(even) select {
+            background: #3a3a3a;
+            color: white;
+            border-color: #555;
+        }
+        
+        tr:hover {
+            background: #e8ebff !important;
+            color: #333 !important;
+        }
+        
+        tr:hover select {
+            background: white !important;
+            color: #333 !important;
+        }
+        
+        select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Poorfish', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            background: white;
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+        }
+        
+        body.dark-mode select {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        body.dark-mode select:focus {
+            border-color: #a78bff;
+        }
+        
+        .preview-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 80px;
+        }
+        
+        .category {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        tr:nth-child(even) .category {
+            color: #ddd;
+        }
+        
+        .extension {
+            font-family: 'Courier New', monospace;
+            color: #764ba2;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) .extension {
+            color: #a78bff;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        
+        body.dark-mode .stats {
+            background: #2a2a2a;
+        }
+        
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-family: 'Courier New', 'Lucida Console', monospace;
+        }
+        
+        .filter-section {
+            margin-bottom: 20px;
+        }
+        
+        .filter-input {
+            width: 300px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Courier New', 'Lucida Console', monospace;
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+        }
+        
+        body.dark-mode .filter-input {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+        
+        body.dark-mode .filter-input:focus {
+            border-color: #a78bff;
+        }
+        
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            padding: 15px;
+            border-radius: 6px;
+            color: #c33;
+            margin-bottom: 20px;
+            font-family: 'Courier New', 'Lucida Console', monospace;
+        }
+        
+        .success {
+            background: #efe;
+            border: 1px solid #cfc;
+            padding: 15px;
+            border-radius: 6px;
+            color: #3c3;
+            margin-bottom: 20px;
+            font-family: 'Courier New', 'Lucida Console', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="mode-toggle">
+        <button onclick="toggleDarkMode()" id="modeBtn">🌙</button>
+    </div>
+    
+    <div class="container">
+        <h1>🎨 LS_COLORS Editor</h1>
+        
+        <div class="input-section">
+            <h3>LS_COLORS Input</h3>
+            <textarea id="inputColors" placeholder="Paste LS_COLORS string here (e.g.: di=0;38;2;102;217;239:*.txt=0;38;2;226;209;57:...)"></textarea>
+            <div class="button-group">
+                <button class="btn-primary" onclick="parseColors()">🔄 Parse</button>
+                <button class="btn-secondary" onclick="exportColors()">📤 Export</button>
+                <button class="btn-secondary" onclick="resetAll()">🔄 Reset</button>
+            </div>
+        </div>
+        
+        <div id="message"></div>
+        
+        <div class="stats" id="stats" style="display:none;">
+            <div class="stat-item">
+                <div class="stat-value" id="totalEntries">0</div>
+                <div class="stat-label">Entries</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalExtensions">0</div>
+                <div class="stat-label">File Extensions</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalSpecial">0</div>
+                <div class="stat-label">Special Entries</div>
+            </div>
+        </div>
+        
+        <div class="filter-section" id="filterSection" style="display:none;">
+            <input type="text" class="filter-input" id="filterInput" placeholder="🔍 Filter (Extension or Category)..." onkeyup="filterTable()">
+        </div>
+        
+        <div class="table-container" id="tableContainer" style="display:none;">
+            <table id="colorTable">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Extension/Key</th>
+                        <th>FG Value</th>
+                        <th>BG Value</th>
+                        <th>Live Preview</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let colorData = [];
+        
+        // ANSI color presets for dropdowns
+        const colorPresets = [
+            { label: 'None', value: '' },
+            { label: 'Red', value: '38;2;249;38;114' },
+            { label: 'Green', value: '38;2;0;255;135' },
+            { label: 'Yellow', value: '38;2;226;209;57' },
+            { label: 'Blue', value: '38;2;102;217;239' },
+            { label: 'Orange', value: '38;2;253;151;31' },
+            { label: 'Pink', value: '38;2;249;38;114' },
+            { label: 'Violet', value: '38;2;174;129;255' },
+            { label: 'Turquoise', value: '38;2;102;217;239' },
+            { label: 'Lime', value: '38;2;166;226;46' },
+            { label: 'Beige', value: '38;2;230;219;116' },
+            { label: 'Gray', value: '38;2;122;112;112' },
+            { label: 'White', value: '38;2;255;255;255' },
+            { label: 'Black', value: '38;2;0;0;0' }
+        ];
+        
+        const bgColorPresets = [
+            { label: 'None', value: '' },
+            { label: 'Black BG', value: '48;2;0;0;0' },
+            { label: 'Dark Gray BG', value: '48;2;51;51;51' },
+            { label: 'Red BG', value: '48;2;249;38;114' },
+            { label: 'Orange BG', value: '48;2;253;151;31' },
+            { label: 'Yellow BG', value: '48;2;230;219;116' },
+            { label: 'Light Red BG', value: '48;2;255;74;68' },
+            { label: 'Blue BG', value: '48;2;102;217;239' }
+        ];
+        
+        // Enhanced category mapping
+        const categoryMap = {
+            'c': 'Source Code (C)', 'h': 'Source Code (C/C++)',
+            'cpp': 'Source Code (C++)', 'cc': 'Source Code (C++)', 'cxx': 'Source Code (C++)',
+            'hpp': 'Source Code (C++)', 'hh': 'Source Code (C++)', 'hxx': 'Source Code (C++)',
+            'py': 'Source Code (Python)', 'js': 'Source Code (JavaScript)', 'jsx': 'Source Code (React/JSX)',
+            'ts': 'Source Code (TypeScript)', 'tsx': 'Source Code (TypeScript/React)',
+            'java': 'Source Code (Java)', 'cs': 'Source Code (C#)', 'go': 'Source Code (Go)',
+            'rs': 'Source Code (Rust)', 'php': 'Source Code (PHP)', 'rb': 'Source Code (Ruby)',
+            'pl': 'Source Code (Perl)', 'lua': 'Source Code (Lua)', 'sh': 'Shell (sh)',
+            'bash': 'Shell (bash)', 'zsh': 'Shell (zsh)', 'fish': 'Shell (fish)',
+            'html': 'Web (HTML)', 'css': 'Web (CSS)', 'scss': 'Web (SCSS)',
+            'zip': 'Archive', 'tar': 'Archive', 'gz': 'Archive', 'bz2': 'Archive', '7z': 'Archive',
+            'txt': 'Text', 'md': 'Markup (Markdown)', 'pdf': 'Dokument (PDF)',
+            'doc': 'Dokument (Word)', 'docx': 'Dokument (Word)',
+            'jpg': 'Bild (JPEG)', 'png': 'Bild (PNG)', 'gif': 'Bild (GIF)', 'svg': 'Bild (SVG)',
+            'mp4': 'Video (MP4)', 'mkv': 'Video (MKV)', 'avi': 'Video (AVI)',
+            'mp3': 'Audio (MP3)', 'flac': 'Audio (FLAC)', 'wav': 'Audio (WAV)',
+            'conf': 'Konfiguration', 'config': 'Konfiguration', 'cfg': 'Konfiguration',
+            'ini': 'Konfiguration', 'yaml': 'Konfiguration', 'yml': 'Konfiguration',
+            'toml': 'Konfiguration', 'json': 'Konfiguration', 'xml': 'Konfiguration',
+            'nix': 'Konfiguration (Nix)', 'mk': 'Build', 'cmake': 'Build',
+            'exe': 'Executable', 'bin': 'Executable', 'so': 'Library', 'dll': 'Library',
+            'tmp': 'Temporär', 'log': 'Log', 'bak': 'Backup'
+        };
+        
+        // Special keys
+        const specialKeys = {
+            'di': 'Directory', 'ln': 'Symlink', 'ex': 'Executable', 'fi': 'File',
+            'bd': 'Block Device', 'cd': 'Character Device', 'pi': 'FIFO/Pipe',
+            'so': 'Socket', 'or': 'Orphan Link', 'mi': 'Missing',
+            'su': 'Setuid', 'sg': 'Setgid', 'tw': 'Sticky Other-Writable',
+            'ow': 'Other-Writable', 'st': 'Sticky'
+        };
+        
+        // Category order
+        const categoryOrder = [
+            'Directory', 'Symlink', 'Executable', 'File',
+            'Block Device', 'Character Device', 'FIFO/Pipe', 'Socket',
+            'Konfiguration', 'Konfiguration (Nix)',
+            'Source Code (C)', 'Source Code (C++)', 'Source Code (Python)',
+            'Source Code (JavaScript)', 'Source Code (TypeScript)',
+            'Archive', 'Text', 'Markup (Markdown)',
+            'Dokument (PDF)', 'Dokument (Word)',
+            'Bild (JPEG)', 'Bild (PNG)', 'Bild (SVG)',
+            'Video (MP4)', 'Audio (MP3)',
+            'Build', 'Library', 'Temporär', 'Log', 'Backup',
+            'Pattern', 'Sonstige Datei'
+        ];
+        
+        function getCategory(key) {
+            if (specialKeys[key]) return specialKeys[key];
+            
+            if (key.startsWith('*.')) {
+                const ext = key.substring(2).toLowerCase();
+                return categoryMap[ext] || 'Sonstige Datei';
+            }
+            
+            if (key.startsWith('*')) return 'Pattern';
+            return 'Unbekannt';
+        }
+        
+        function parseColorValue(value) {
+            const parts = value.split(';');
+            let fg = '', bg = '';
+            
+            const fgIndex = parts.indexOf('38');
+            if (fgIndex !== -1 && parts[fgIndex + 1] === '2') {
+                fg = parts.slice(fgIndex, fgIndex + 5).join(';');
+            }
+            
+            const bgIndex = parts.indexOf('48');
+            if (bgIndex !== -1 && parts[bgIndex + 1] === '2') {
+                bg = parts.slice(bgIndex, bgIndex + 5).join(';');
+            }
+            
+            if (!fg && !bg) fg = value;
+            
+            return { fg, bg };
+        }
+        
+        function rgbFromAnsi(ansiCode) {
+            if (!ansiCode) return '';
+            const parts = ansiCode.split(';');
+            const rgbIndex = parts.indexOf('2');
+            if (rgbIndex !== -1 && rgbIndex + 3 < parts.length) {
+                const r = parts[rgbIndex + 1];
+                const g = parts[rgbIndex + 2];
+                const b = parts[rgbIndex + 3];
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+            return '';
+        }
+        
+        function parseColors() {
+            const input = document.getElementById('inputColors').value.trim();
+            
+            if (!input) {
+                showMessage('Please enter an LS_COLORS string.', 'error');
+                return;
+            }
+            
+            try {
+                colorData = [];
+                
+                // Handle different input formats: LS_COLORS=... or export LS_COLORS=... or just the value
+                let colorString = input;
+                
+                // Remove export statement if present
+                colorString = colorString.replace(/^export\s+/i, '');
+                
+                // Extract value after LS_COLORS= if present
+                if (colorString.includes('LS_COLORS=')) {
+                    colorString = colorString.split('LS_COLORS=')[1];
+                }
+                
+                // Remove quotes if present
+                colorString = colorString.replace(/^['"]|['"]$/g, '');
+                
+                const entries = colorString.split(':');
+                
+                entries.forEach(entry => {
+                    if (!entry.trim()) return;
+                    const [key, value] = entry.split('=');
+                    if (!key || !value) return;
+                    
+                    const colors = parseColorValue(value);
+                    const category = getCategory(key);
+                    
+                    colorData.push({
+                        key: key.trim(),
+                        category: category,
+                        fg: colors.fg,
+                        bg: colors.bg,
+                        originalValue: value
+                    });
+                });
+                
+                if (colorData.length === 0) {
+                    showMessage('No valid entries found.', 'error');
+                    return;
+                }
+                
+                colorData.sort((a, b) => {
+                    const indexA = categoryOrder.indexOf(a.category);
+                    const indexB = categoryOrder.indexOf(b.category);
+                    const orderA = indexA === -1 ? 9999 : indexA;
+                    const orderB = indexB === -1 ? 9999 : indexB;
+                    
+                    if (orderA !== orderB) return orderA - orderB;
+                    return a.key.localeCompare(b.key);
+                });
+                
+                renderTable();
+                updateStats();
+                showMessage(`✅ ${colorData.length} entries successfully parsed.`, 'success');
+                
+                document.getElementById('stats').style.display = 'flex';
+                document.getElementById('filterSection').style.display = 'block';
+                document.getElementById('tableContainer').style.display = 'block';
+                
+            } catch (e) {
+                showMessage('Parsing error: ' + e.message, 'error');
+            }
+        }
+        
+        function createColorDropdown(presets, currentValue, index, type) {
+            let html = '<select onchange="updateColor(' + index + ', \'' + type + '\', this.value)">';
+            presets.forEach(preset => {
+                const selected = preset.value === currentValue ? 'selected' : '';
+                html += `<option value="${preset.value}" ${selected}>${preset.label}</option>`;
+            });
+            html += '</select>';
+            return html;
+        }
+        
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            colorData.forEach((item, index) => {
+                const row = tbody.insertRow();
+                row.dataset.index = index;
+                row.dataset.category = item.category;
+                row.dataset.key = item.key;
+                
+                row.insertCell(0).innerHTML = `<span class="category">${item.category}</span>`;
+                row.insertCell(1).innerHTML = `<span class="extension">${item.key}</span>`;
+                row.insertCell(2).innerHTML = createColorDropdown(colorPresets, item.fg, index, 'fg');
+                row.insertCell(3).innerHTML = createColorDropdown(bgColorPresets, item.bg, index, 'bg');
+                row.insertCell(4).innerHTML = generatePreview(item);
+            });
+        }
+        
+        function generatePreview(item) {
+            let style = '';
+            if (item.fg) {
+                const fgColor = rgbFromAnsi(item.fg);
+                if (fgColor) style += `color: ${fgColor}; `;
+            }
+            if (item.bg) {
+                const bgColor = rgbFromAnsi(item.bg);
+                if (bgColor) style += `background-color: ${bgColor}; `;
+            }
+            
+            const displayText = item.key.startsWith('*.') ? item.key.substring(2) : item.key;
+            return `<span class="preview-cell" style="${style}">${displayText}</span>`;
+        }
+        
+        function updateColor(index, type, value) {
+            colorData[index][type] = value;
+            const row = document.querySelector(`tr[data-index="${index}"]`);
+            if (row) row.cells[4].innerHTML = generatePreview(colorData[index]);
+        }
+        
+        function exportColors() {
+            if (colorData.length === 0) {
+                showMessage('No data available to export.', 'error');
+                return;
+            }
+            
+            const exported = colorData.map(item => {
+                let value = '';
+                if (item.fg && item.bg) value = `0;${item.fg};${item.bg}`;
+                else if (item.fg) value = `0;${item.fg}`;
+                else if (item.bg) value = `0;${item.bg}`;
+                else value = item.originalValue;
+                return `${item.key}=${value}`;
+            }).join(':');
+            
+            navigator.clipboard.writeText(exported).then(() => {
+                showMessage('✅ LS_COLORS copied to clipboard!', 'success');
+            }).catch(() => {
+                document.getElementById('inputColors').value = exported;
+                showMessage('⚠️ Export completed. Please copy manually.', 'success');
+            });
+        }
+        
+        function filterTable() {
+            const filter = document.getElementById('filterInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#tableBody tr');
+            
+            rows.forEach(row => {
+                const category = row.dataset.category.toLowerCase();
+                const key = row.dataset.key.toLowerCase();
+                row.style.display = (category.includes(filter) || key.includes(filter)) ? '' : 'none';
+            });
+        }
+        
+        function resetAll() {
+            colorData = [];
+            document.getElementById('inputColors').value = '';
+            document.getElementById('tableBody').innerHTML = '';
+            document.getElementById('stats').style.display = 'none';
+            document.getElementById('filterSection').style.display = 'none';
+            document.getElementById('tableContainer').style.display = 'none';
+            showMessage('', '');
+        }
+        
+        function updateStats() {
+            const extensions = colorData.filter(item => item.key.startsWith('*.')).length;
+            const special = colorData.filter(item => !item.key.startsWith('*')).length;
+            
+            document.getElementById('totalEntries').textContent = colorData.length;
+            document.getElementById('totalExtensions').textContent = extensions;
+            document.getElementById('totalSpecial').textContent = special;
+        }
+        
+        function showMessage(msg, type) {
+            const msgDiv = document.getElementById('message');
+            if (!msg) {
+                msgDiv.innerHTML = '';
+                return;
+            }
+            msgDiv.className = type;
+            msgDiv.textContent = msg;
+        }
+        
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const btn = document.getElementById('modeBtn');
+            btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+            
+            // Save preference
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+        
+        // Load dark mode preference on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('modeBtn').textContent = '☀️';
+            }
+        });
+    </script>
+</body>
+</html>
