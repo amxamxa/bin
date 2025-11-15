@@ -65,7 +65,7 @@ usage() {
     # 'cat <<EOF' ist ein "Here Document", ideal für mehrzeilige Textblöcke.
     cat <<EOF
 ${BOLD}Vivid Theme Previewer${RESET}
-
+<
 Dieses Skript zeigt interaktiv eine Vorschau aller verfügbaren 'vivid'-Themen an.
 
 ${YELLOW}Funktionen:${RESET}
