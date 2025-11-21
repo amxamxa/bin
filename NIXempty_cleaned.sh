@@ -383,7 +383,7 @@ get_store_size() {
     log_message "DEBUG" "Calculating store size..."
     
     # Primary method: du with timeout and max-depth optimization
-    if size_bytes=$(timeout 30 du -sb --max-depth=0 /nix/store 2>/dev/null | awk '{print $1}'); then
+    if size_bytes=$(command du -sb --max-depth=0 /nix/store 2>/dev/null | awk '{print $1}'); then
         if [[ "$size_bytes" =~ ^[0-9]+$ ]] && [[ $size_bytes -gt 0 ]]; then
             log_message "DEBUG" "Store size calculated via du: $size_bytes bytes"
             echo "$size_bytes"
