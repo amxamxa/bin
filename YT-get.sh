@@ -1,35 +1,36 @@
 #!/usr/bin/env bash
 
-#zsh *-> sh
 # # $XDG_VIDEOS_DIR #$XDG_MUSIC_DIR
 #Wählbarer Download-Ordner
  #   DEFAULT-WERT $XGD_VIDEOS
-  #  Eingabeaufforderung
-   # Fehlt der Ordner → automatische Erstellung
-    #Fehlerschutz bei fehlenden Rechten
+ #  Eingabeaufforderung
+ # Fehlt der Ordner → automatische Erstellung
+ # Fehlerschutz bei fehlenden Rechten
 
-#Automatische, konfliktfreie Dateinamen
+# Automatische, konfliktfreie Dateinamen
  #   yt-dlp-Template:
-  #  %(title).150s.%(ext)s
-   # --no-overwrites schützt vor Überschreiben
-   # --restrict-filenames entfernt problematische Zeichen
+ #  %(title).150s.%(ext)s
+ # --no-overwrites schützt vor Überschreiben
+ # --restrict-filenames entfernt problematische Zeichen
 
-#(x) Fortschrittsanzeige
+# Fortschrittsanzeige
  #   yt-dlp zeigt automatisch eine präzise Fortschrittsleiste
   #  kein weiterer Code nötig
 
 #Fehlerhandling
  #   Prüfung von $?
-  #  klare Fehlermeldung
-   # Exit-Code wird korrekt durchgereicht
-#-------------------------------------------------------------
+ #  klare Fehlermeldung
+  # Exit-Code wird korrekt durchgereicht
+#--------------------------------------------------------
 
-# kompaktes, zuverlässiges Zsh-Skript für NixOS, das YouTube-Links per yt-dlp herunterlädt und dich beim Start nach URL und Modus fragt.
+# kompaktes, zuverlässiges Bash-Skript, das YouTube-Links als mp3 (Musik), mp4 (Video) per yt-dlp herunterlädt. 
+#F unktionsaufruf ohne Argument fragt YouTube-URL ab und beim Start nach Modus (mp3 oder mp4) fragt.
 
-# odo - YouTube Downloader for NixOS
+#t odo - YouTube Downloader for NixOS
 # Requirements: yt-dlp, ffmpeg
 
 # Color definitions
+
 SKY="\033[38;2;62;36;129m\033[48;2;135;206;235m"
 MINT="\033[38;2;6;88;96m\033[48;2;144;238;144m"
 NIGHT="\033[38;2;252;222;90m\033[48;2;0;0;139m"
