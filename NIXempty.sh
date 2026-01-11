@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#!/usr/bin/env bash
 #===============================================================================
 # TITLE:        NIXempty.sh - Advanced Nix Store Cleanup Utility
 # AUTHOR:       max_kempter
@@ -11,20 +10,16 @@
 #===============================================================================
 
 #-------------------------------------------------------------------------------
-# SECTION 1: STRICT MODE AND GLOBAL CONFIGURATION
-#-------------------------------------------------------------------------------
-
+# SECTION: STRICT MODE AND GLOBAL CONFIGURATION
 # Enable strict error handling for better reliability
 set -euo pipefail
 IFS=$'\n\t'
 
 #-------------------------------------------------------------------------------
-# SECTION 2: COLOR PALETTE (ANSI ESCAPE CODES)
-#-------------------------------------------------------------------------------
-
-readonly SKY="\033[38;2;62;36;129m\033[48;2;135;206;235m"
-readonly RED="\033[38;2;240;128;128m\033[48;2;139;0;0m"
-readonly RASPBERRY="\033[38;2;32;0;21m\033[48;2;221;160;221m"
+# SECTION: COLOR PALETTE (ANSI ESCAPE CODES)
+readonly SKY="\\033[38;2;62;36;129m\\033[48;2;135;206;235m"
+readonly RED="\\033[38;2;240;128;128m\\033[48;2;139;0;0m"
+readonly RASPBERRY="\\033[38;2;32;0;21m\\033[48;2;221;160;221m"
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[1;33m'
 readonly CYAN='\033[0;36m'
@@ -34,8 +29,6 @@ readonly NC='\033[0m'  # No Color / Reset
 
 #-------------------------------------------------------------------------------
 # SECTION 3: SCRIPT CONFIGURATION
-#-------------------------------------------------------------------------------
-
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly VERSION="v0.2.1"
 readonly LOG_FILE="/tmp/nix-cleanup-$(date +%Y%m%d-%H%M%S).log"
@@ -53,9 +46,7 @@ readonly EXIT_USER_CANCELLED=15
 readonly EXIT_DRY_RUN=16
 
 #-------------------------------------------------------------------------------
-# SECTION 4: UTILITY FUNCTIONS
-#-------------------------------------------------------------------------------
-
+# SECTION  UTILITY FUNCTIONS
 # FUNCTION: log_message
 # DESCRIPTION: Log messages with timestamp and level support
 # RETURNS: Nothing (outputs to stderr and log file)
@@ -559,9 +550,9 @@ NIXempty() {
     #---------------------------------------------------------------------------
     
     echo
-    echo -e "${GREEN}╔══════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║                    CLEANUP COMPLETE                      ║${NC}"
-    echo -e "${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
+    echo -e "${GREEN} ╔══════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN} ║                    CLEANUP COMPLETE                      ║${NC}"
+    echo -e "${GREEN} ╚══════════════════════════════════════════════════════════╝${NC}"
     echo
     echo -e "${CYAN}Initial store size:${NC}  $initial_size_human"
     echo -e "${CYAN}Final store size:${NC}    $final_size_human"

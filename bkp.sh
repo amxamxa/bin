@@ -231,26 +231,20 @@ _analyze_cp_error() {
 # Usage: _test_bkp_functionality
 ################################################################################
 _test_bkp_functionality() {
-    echo "=== BKP Diagnostic Test ==="
-    
+    echo "=== BKP Diagnostic Test ==="   
     # Test 1: Color output
     echo "Test 1: Color codes"
     printf "%s COLOR TEST %s\n" "$VIOLET" "$RESET"
-    
     # Test 2: Function is defined
     echo "Test 2: Function defined"
     type BKP
-    
     # Test 3: Create test file and backup
     echo "Test 3: Basic functionality"
     local testfile="/tmp/bkp_test_$$"
     echo "test content" > "$testfile"
     BKP "$testfile"
     ls -la /tmp/bkp_test_* 2>/dev/null || echo "No backup created!"
-    rm -f /tmp/bkp_test_* 2>/dev/null
-    
+    rm -f /tmp/bkp_test_* 2>/dev/null   
     echo "=== Diagnostic Complete ==="
 }
 
-# Uncomment to run diagnostic when sourcing this script
-_test_bkp_functionality
