@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-################################################################################
+####################################################
 # Function: BKP (Backup with Enhanced Error Reporting)
 # Purpose: Create timestamped backups with detailed error analysis
-# Author: Enhanced version with comprehensive debugging
+# Enhanced version with comprehensive debugging
 # Usage: BKP <source> [source2 ... sourceN]
 #
 # Features:
