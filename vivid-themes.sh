@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 ##################################################
-# Robustes Vivid Theme Preview Skript
+#  Vivid Theme Preview Skript
 # Dieses Skript iteriert interaktiv durch alle 'vivid' Themen
 # TODO: 
 # - translate to eng
 # - vivid themes | grep -v "light" 
 # - themes = vivid themes | grep -v "light" | wc -l
-# - clear Screen before to start w/ nextg theme
+# - clear Screen before to start w/ next theme
 ##################################################
 
 # --- Robustheit: Strikter Modus ---
@@ -151,32 +151,27 @@ main() {
     sleep 4 # Kurze Pause, damit der Benutzer die Meldung lesen kann
 
     local prompt_msg
-    prompt_msg="${S_PROMPT} ${BOLD} Angezeigtes Thema:${GREEN} $themes \n ${YELLOW}Drücken Sie [Enter] für das nächste Thema (oder [Strg+D] zum Abbrechen):${RESET} "
+    prompt_msg="${S_PROMPT} ${BOLD} Angezeigtes Thema:${GREEN} $theme ${RESET}\n${YELLOW}Drücken Sie [Enter] für das nächste Thema (oder [Strg+D] zum Abbrechen):${RESET} "
 
     # --- Hauptschleife  ---
     # Iteriert sicher über das Array. "${themes[@]}" stellt sicher, dass
     # Themen mit Leerzeichen korrekt behandelt werden.
     for theme in "${themes[@]}"; do
-        command clear 
-        sleep 1
-        #  Farbige Ausgabe mit Symbol
-        # \t (Tabulator) für bessere Ausrichtung
-        echo -e "${S_THEME} ${BOLD}Vorschau für Thema: \t ${BOLD}${GREEN}$theme${RESET}"
-        
-        #  Timeout für den Preview-Befehl
-        # '|| true' wird hinzugefügt, falls 'vivid preview' einen Fehlercode zurückgibt
-        # (z.B. wenn das Thema fehlerhaft ist), 'set -e' aber nicht die
-        # gesamte Schleife abbrechen soll.
-        if ! timeout "$TIMEOUT_DURATION" vivid preview "$theme"; then
-            echo -e "\n${S_ERROR} ${RED}'vivid preview $theme' ist fehlgeschlagen oder hat das Zeitlimit ($TIMEOUT_DURATION) überschritten.${RESET}"
-            # Das Skript fährt trotzdem mit dem nächsten Thema fort
-        fi
-        
-        #  Warten auf Benutzer
-        # -p für Prompt, -r für raw input (verhindert Backslash-Interpretation)
-        read -r -p "$prompt_msg"
-    done
-    
+    command clear
+    sleep 1
+
+    echo -e "${S_THEME} ${BOLD}Vorschau für Thema: \t ${BOLD}${GREEN}$theme${RESET}"
+
+    if ! timeout "$TIMEOUT_DURATION" vivid preview "$theme"; then
+        echo -e "\n${S_ERROR} ${RED}'vivid preview $theme' ist fehlgeschlagen oder hat das Zeitlimit ($TIMEOUT_DURATION) überschritten.${RESET}"
+    fi
+
+    # Prompt erst *hier* erzeugen
+    prompt_msg="${S_PROMPT} ${BOLD} Angezeigtes Thema:${GREEN} $theme ${RESET}\n${YELLOW}Drücken Sie [Enter] für das nächste Thema (oder [Strg+D] zum Abbrechen):${RESET} "
+
+    read -r -p "$prompt_msg"
+done
+
     echo -e "\n${S_OK} ${GREEN}Alle Themen wurden angezeigt.${RESET}"
 }
 
