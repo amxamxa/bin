@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 #
 # NIXwo.sh - NixOS Binary Inspector
-# 
 # Description:
 #   Analyzes binaries and shell commands on NixOS systems.
 #   For Nix store binaries: shows store path, derivation, dependencies, and metadata.
 #   For shell builtins/functions/aliases: shows type, definition, and source location.
-#
 # Usage:
 #   NIXwo.sh <command-name>
-#
 # Examples:
 #   NIXwo.sh ls          # Nix store binary analysis
-#   NIXwo.sh firefox     # Nix store binary analysis
 #   NIXwo.sh cd          # Shell builtin analysis
 #   NIXwo.sh ll          # Alias analysis (if defined)
 #
@@ -22,17 +18,13 @@
 #   - Predefined color variables in shell environment:
 #     PINK, PINK2, RESET, SKY, RED, IVORY, BOLD, BROWN, AMBER, VIO
 #
-# Author: IT-Engineer
 # Version: 2.1
 # Last Modified: 2026-02-14
 #
-
 set -euo pipefail  # Exit on errors, undefined variables, pipe failures
-
 # ============================================================================
 # FUNCTION DEFINITIONS
 # ============================================================================
-
 # --- Function: Analyze shell builtins, functions, and aliases ---
 analyze_shell_command() {
     local cmd="$1"
@@ -157,6 +149,7 @@ search_function_source() {
     if [ -n "${ZDOTDIR:-}" ]; then
         config_files+=("$ZDOTDIR/.zshrc")
         config_files+=("$ZDOTDIR/.zshenv")
+   		config_files+=("$ZDOTDIR/functions/$func_name")
     fi
     
     for config in "${config_files[@]}"; do
@@ -170,8 +163,7 @@ search_function_source() {
     done
     
     if ! $found; then
-        echo -e "${IVORY}  • Check:${RESET} ~/.zshrc, ~/.zshenv, ~/.zprofile"
-        echo -e "${IVORY}  • Or:${RESET} \$ZDOTDIR/* if ZDOTDIR is set"
+        echo -e "${IVORY}  • ${RESET} if \$ZDOTDIR/* is set in a correct way"
         echo -e "${IVORY}  • Or:${RESET} Loaded from a plugin/framework"
     fi
 }
