@@ -37,7 +37,8 @@ INPUT="$1"
 # 1. C-style block comments (/* ... */), possibly spanning multiple lines
 # 2. Shell-style comments (# ...)
 # Then pipe to 'bat' for pretty printing.
-sed -e 's:/\*[^*]*\*\/::g' \
-    -e ':a; s:/\*[^*]*\*\/::g; ta' \
-    -e 's/#.*$//' "$INPUT" | bat --language=sh --style=plain
+sed -e 's:/\*[^*]*\*\/::g' 			\
+    -e ':a; s:/\*[^*]*\*\/::g; ta'  \
+    -e 's/#.*$//' "$INPUT" | 		\
+    bat --language=sh --style=diff --paging auto
 
